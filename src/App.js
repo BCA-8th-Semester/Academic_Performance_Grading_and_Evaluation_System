@@ -1,37 +1,20 @@
 // App.js
 
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import EmailEntry from './EmailEntry';
-import Dashboard from './Dashboard';  
-import { auth } from './firebase';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import ProtectedRoute from './ProtectedRoute';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Dashboard from './component/Dashboard';
+import Login from './Login'; // Import your Login component
+
 
 function App() {
-  const [user, loading] = useAuthState(auth);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <Router>
       <Routes>
-        <Route 
-          path="/" 
-          element={user ? <Navigate to="/dashboard" /> : <EmailEntry />} 
-        />
-      
-        <Route 
-          path="/dashboard" 
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } 
-        />
-        <Route path="*" element={<Navigate to="/" />} />
+         
+        <Route path="/" element={<Login />} /> {/* Login route */}
+        <Route path="/dashboard" element={<Dashboard />} />
+       
+        {/* Add other routes here */}
       </Routes>
     </Router>
   );
