@@ -1,17 +1,29 @@
 // File: Dashboard.js
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar.js';
+import DashboardHeader from './DashboardHeader';
+import StatsCards from './StatsCards.js';
+// import DashboardStatsCards from './DashboardStatusCards.js';
+import ChartsSection from './ChartsSection';
+import RecentActivity from './RecentActivity';
+import RecentCoursesCard from './RecentCoursesCard';
+// import GradeDistributionChart from './GradeDistributionChart';
+// import ActivityCard from './ActivityCard';
+import StudentsTable from './StudentsTable';
 
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState(auth.currentUser);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(user => {
-      if (!user) {
+    const unsubscribe = auth.onAuthStateChanged(currentUser => {
+      if (!currentUser) {
         navigate('/');
+      } else {
+        setUser(currentUser); // Update user state on profile/email change
       }
     });
     return () => unsubscribe();
@@ -23,24 +35,33 @@ const Dashboard = () => {
   };
 
   return (
-  <div style={{ display: 'flex' }} className="flex min-h-screen bg-gray-50">
-    <Sidebar />
-    <div style={{ marginLeft: 220, padding: 20, width: '100%' }} className="flex-1 flex flex-col">
-      {/* Your dashboard content here */}
-      <h1>Welcome to the Dashboard</h1>
-      {/* <div className="flex-1 flex flex-col">
-        <DashboardHeader />
+    <div style={{ display: 'flex' }} className="flex min-h-screen bg-gray-50">
+      <Sidebar user={user} />
+      <div className="flex-1 flex flex-col">
+        <DashboardHeader user={user} />
         <main className="flex-1 p-6 space-y-6">
           <StatsCards />
+          
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ChartsSection />
-            <RecentActivity />
+           <RecentCoursesCard />
+             <ChartsSection />
+                </div>
+
+           {/* <div className="grid grid-cols-12 gap-6">
+            <RecentCoursesCard />
+             <ChartsSection />
+            <RecentActivity /> 
+          </div> */}
+
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  
+              <StudentsTable />
+               <RecentActivity /> 
           </div>
-          <StudentsTable />
+        
         </main>
-      </div> */}
+      </div>
     </div>
-  </div>
   );
 };
 

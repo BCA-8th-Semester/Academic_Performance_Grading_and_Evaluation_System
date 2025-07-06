@@ -1,21 +1,24 @@
 import React, { useState } from 'react';
 import { Home, Users, BookOpen, Award, Settings, BarChart3, Calendar, Menu, X, LogOut } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom'; // Add useNavigate
-import { auth } from '../firebase'; // Adjust path if needed
-import './Sidebar.css'; // Optional: for styling
+import { Link, useNavigate } from 'react-router-dom';
+import { auth } from '../firebase';
+import './Sidebar.css';
 
 const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false); // Add this line
   const navigate = useNavigate();
+  const user = auth.currentUser;
 
   const menuItems = [
     { icon: Home, label: 'Home', route: '/', active: true },
-    { icon: Users, label: 'Students', count: '120', route: '/students' },
+    // { icon: Users, label: 'Students', count: '120', route: '/students' },
     { icon: BookOpen, label: 'Courses', count: '15', route: '/courses' },
-    { icon: Award, label: 'Grades', route: '/grades' },
-    { icon: BarChart3, label: 'Analytics', route: '/analytics' },
-    { icon: Calendar, label: 'Schedule', route: '/schedule' },
-    { icon: Settings, label: 'Settings', route: '/settings' },
+    // { icon: Award, label: 'Grades', route: '/grades' },
+    // { icon: BarChart3, label: 'Analytics', route: '/analytics' },
+    // { icon: Calendar, label: 'Schedule', route: '/schedule' },
+    { icon: Users, label: 'User', route: '/user' },
+    { icon: Menu, label: 'Admin Tools', route: '/Admin Tools' },
   ];
 
   const handleLogout = async () => {
@@ -27,7 +30,45 @@ const Sidebar = () => {
     <div className={` text-black transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'}`}>
       <div className="p-4 border-b border-slate-700">
         <div className="flex items-center justify-between">
-          {!isCollapsed && <h1 className="text-2xl font-bold text-blue-700">GradePro</h1>}
+          {!isCollapsed && (
+            <div className="relative">
+              <div
+                className="mt-2 flex items-center space-x-2 cursor-pointer"
+                onClick={() => setUserDropdownOpen((open) => !open)}
+              >
+                <img
+                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user?.displayName || user?.email || 'User')}`}
+                  alt="Profile"
+                  className="w-8 h-8 rounded-full border"
+                />
+                <div>
+                  <div className="font-medium text-sm">
+                    {user?.displayName || user?.email?.split('@')[0] || 'User'}
+                  </div>
+                  <div className="text-xs text-gray-500">{user?.email}</div>
+                </div>
+              </div>
+              {userDropdownOpen && (
+                <div className="absolute left-0 mt-2 w-40 bg-white border rounded shadow-lg z-10">
+                  <button
+                    className="block w-full text-left px-4 py-2 hover:bg-blue-100"
+                    onClick={() => {
+                      setUserDropdownOpen(false);
+                      navigate('/profile');
+                    }}
+                  >
+                    Profile
+                  </button>
+                  <button
+                    className="block w-full text-left px-4 py-2 hover:bg-blue-100 text-red-500"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="p-1 rounded hover:bg-slate-700 transition-colors"
@@ -63,17 +104,6 @@ const Sidebar = () => {
               </Link>
             </li>
           ))}
-          {/* Logout option */}
-          <li>
-            <button
-              // onClick={handleLogout}
-              className="flex items-center w-full px-3 py-2 rounded-lg transition-colors hover:bg-blue-600 text-black-500 hover:text-red-500"
-              style={{ background: 'none', border: 'none', outline: 'none', cursor: 'pointer' }}
-            >
-              <LogOut size={20} />
-              {!isCollapsed && <span className="ml-3">Logout</span>}
-            </button>
-          </li>
         </ul>
       </nav>
     </div>
