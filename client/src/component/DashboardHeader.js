@@ -1,10 +1,11 @@
 import React from 'react';
 import { Search } from 'lucide-react';
 
-const DashboardHeader = ({ user }) => (
-  <header className="flex items-center justify-between px-6 py-4  rounded-lg mb-6">
+// Accept a "title" prop to update the header name dynamically
+const DashboardHeader = ({ user, title = "Home" }) => (
+  <header className="flex items-center justify-between px-6 py-4 rounded-lg mb-6">
     <div>
-      <h2 className="text-2xl font-semibold">Home</h2>
+      <h2 className="text-2xl font-semibold">{title}</h2>
       {/* <p className="text-sm text-gray-500">{user?.email}</p> */}
     </div>
     <div className="flex items-center space-x-4">

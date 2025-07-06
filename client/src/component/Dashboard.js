@@ -37,7 +37,7 @@ const Dashboard = () => {
   return (
     <div style={{ display: 'flex' }} className="flex min-h-screen bg-gray-50">
       <Sidebar user={user} />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col ml-64"> {/* or ml-16 if collapsed */}
         <DashboardHeader user={user} />
         <main className="flex-1 p-6 space-y-6">
           <StatsCards />

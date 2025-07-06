@@ -1,24 +1,31 @@
 import React, { useState } from 'react';
-import { Home, Users, BookOpen, Award, Settings, BarChart3, Calendar, Menu, X, LogOut } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Home, Users, BookOpen, Menu, X, ChevronDown, LogOut, User as UserIcon } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { auth } from '../firebase';
-import './Sidebar.css';
 
 const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [userDropdownOpen, setUserDropdownOpen] = useState(false); // Add this line
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false); // For user menu dropdown
   const navigate = useNavigate();
+  const location = useLocation();
   const user = auth.currentUser;
 
   const menuItems = [
-    { icon: Home, label: 'Home', route: '/', active: true },
-    // { icon: Users, label: 'Students', count: '120', route: '/students' },
-    { icon: BookOpen, label: 'Courses', count: '15', route: '/courses' },
-    // { icon: Award, label: 'Grades', route: '/grades' },
-    // { icon: BarChart3, label: 'Analytics', route: '/analytics' },
-    // { icon: Calendar, label: 'Schedule', route: '/schedule' },
-    { icon: Users, label: 'User', route: '/user' },
-    { icon: Menu, label: 'Admin Tools', route: '/Admin Tools' },
+    { icon: Home, label: 'Dashboard', route: '/dashboard' },
+    { icon: BookOpen, label: 'Courses', route: '/courses', count: '15' },
+    {
+      icon: Users,
+      label: 'User',
+      route: '/user',
+      dropdown: true,
+      options: [
+        { label: 'Teachers', route: '/user/teachers' },
+        { label: 'Students', route: '/user/students' },
+        { label: 'Admin', route: '/user/admin' },
+      ],
+    },
+    { icon: Menu, label: 'Admin Tools', route: '/admin-tools' },
   ];
 
   const handleLogout = async () => {
@@ -27,14 +34,17 @@ const Sidebar = () => {
   };
 
   return (
-    <div className={` text-black transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'}`}>
+    <div
+      className={`fixed top-0 left-0 h-screen bg-white shadow-lg z-40 flex flex-col text-black transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'}`}
+      style={{ minHeight: '100vh' }}
+    >
       <div className="p-4 border-b border-slate-700">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
             <div className="relative">
               <div
                 className="mt-2 flex items-center space-x-2 cursor-pointer"
-                onClick={() => setUserDropdownOpen((open) => !open)}
+                onClick={() => setProfileDropdownOpen((open) => !open)}
               >
                 <img
                   src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user?.displayName || user?.email || 'User')}`}
@@ -47,23 +57,38 @@ const Sidebar = () => {
                   </div>
                   <div className="text-xs text-gray-500">{user?.email}</div>
                 </div>
+                <ChevronDown size={18} className="ml-1 text-gray-500" />
               </div>
-              {userDropdownOpen && (
-                <div className="absolute left-0 mt-2 w-40 bg-white border rounded shadow-lg z-10">
+              {/* Profile Dropdown */}
+              {profileDropdownOpen && (
+                <div className="absolute left-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-30 animate-fade-in">
                   <button
-                    className="block w-full text-left px-4 py-2 hover:bg-blue-100"
+                    className="flex items-center w-full text-left px-4 py-2 hover:bg-blue-100 transition-colors"
                     onClick={() => {
-                      setUserDropdownOpen(false);
+                      setProfileDropdownOpen(false);
                       navigate('/profile');
                     }}
                   >
-                    Profile
+                    <UserIcon size={18} className="mr-2 text-blue-600" />
+                    <span className="font-medium">Profile</span>
                   </button>
                   <button
-                    className="block w-full text-left px-4 py-2 hover:bg-blue-100 text-red-500"
+                    className="flex items-center w-full text-left px-4 py-2 hover:bg-blue-100 text-gray-700 transition-colors"
+                    onClick={() => {
+                      setProfileDropdownOpen(false);
+                      navigate('/settings');
+                    }}
+                  >
+                    <Menu size={18} className="mr-2 text-gray-500" />
+                    <span className="font-medium">Settings</span>
+                  </button>
+                  <div className="border-t my-1" />
+                  <button
+                    className="flex items-center w-full text-left px-4 py-2 hover:bg-red-100 text-red-600 transition-colors"
                     onClick={handleLogout}
                   >
-                    Logout
+                    <LogOut size={18} className="mr-2" />
+                    <span className="font-medium">Logout</span>
                   </button>
                 </div>
               )}
@@ -78,34 +103,82 @@ const Sidebar = () => {
         </div>
       </div>
       
-      <nav className="p-4">
+      <nav className="flex-1 overflow-y-auto p-4">
         <ul className="space-y-2">
           {menuItems.map((item, index) => (
-            <li key={index}>
-              <Link
-                to={item.route}
-                className={`flex items-center px-3 py-2 rounded-lg transition-colors ${
-                  item.active 
-                    ? 'bg-blue-600 text-black hover:bg-blue-700 hover:text-white' 
-                    : 'hover:bg-blue-600 text-black-500 hover:text-white'
-                }`}
-              >
-                <item.icon size={20} />
-                {!isCollapsed && (
-                  <>
-                    <span className="ml-3">{item.label}</span>
-                    {item.count && (
-                      <span className="ml-auto bg-slate-600 text-xs px-2 py-1 rounded-full">
-                        {item.count}
-                      </span>
+            <li key={index} className="relative">
+              {item.dropdown ? (
+                <>
+                  <button
+                    className={`flex items-center w-full px-3 py-2 rounded-lg transition-colors ${
+                      location.pathname.startsWith('/user')
+                        ? 'bg-blue-600 text-white font-semibold shadow'
+                        : 'hover:bg-blue-100 text-black'
+                    }`}
+                    onClick={() => setUserMenuOpen((open) => !open)}
+                  >
+                    <item.icon size={20} />
+                    {!isCollapsed && (
+                      <>
+                        <span className="ml-3">{item.label}</span>
+                        <ChevronDown size={16} className="ml-auto" />
+                      </>
                     )}
-                  </>
-                )}
-              </Link>
+                  </button>
+                  {userMenuOpen && !isCollapsed && (
+                    <ul className="absolute left-0 mt-1 w-full bg-white border rounded shadow z-20">
+                      {item.options.map((opt, i) => (
+                        <li key={i}>
+                          <Link
+                            to={opt.route}
+                            className={`block px-4 py-2 text-sm hover:bg-blue-100 ${
+                              location.pathname === opt.route ? 'bg-blue-100 font-semibold' : ''
+                            }`}
+                            onClick={() => setUserMenuOpen(false)}
+                          >
+                            {opt.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </>
+              ) : (
+                <Link
+                  to={item.route}
+                  className={`flex items-center px-3 py-2 rounded-lg transition-colors ${
+                    location.pathname === item.route
+                      ? 'bg-blue-600 text-white font-semibold shadow'
+                      : 'hover:bg-blue-100 text-black'
+                  }`}
+                >
+                  <item.icon size={20} />
+                  {!isCollapsed && (
+                    <>
+                      <span className="ml-3">{item.label}</span>
+                      {item.count && (
+                        <span className="ml-auto bg-slate-600 text-xs px-2 py-1 rounded-full">
+                          {item.count}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </Link>
+              )}
             </li>
           ))}
         </ul>
       </nav>
+      {/* Logout Button at the bottom, always fixed */}
+      <div className="p-4 border-t border-slate-200">
+        <button
+          className="flex items-center w-full text-left px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+          onClick={handleLogout}
+        >
+          <LogOut size={18} className="mr-2" />
+          Logout
+        </button>
+      </div>
     </div>
   );
 };
