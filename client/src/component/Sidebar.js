@@ -17,12 +17,11 @@ const Sidebar = () => {
     {
       icon: Users,
       label: 'User',
-      route: '/user',
       dropdown: true,
       options: [
+        { label: 'Admin', route: '/user/admins' },      // <-- This route
         { label: 'Teachers', route: '/user/teachers' },
         { label: 'Students', route: '/user/students' },
-        { label: 'Admin', route: '/user/admin' },
       ],
     },
     { icon: Menu, label: 'Admin Tools', route: '/admin-tools' },
@@ -59,7 +58,7 @@ const Sidebar = () => {
                 </div>
                 <ChevronDown size={18} className="ml-1 text-gray-500" />
               </div>
-              {/* Profile Dropdown */}
+              {/* Profile Dropdown
               {profileDropdownOpen && (
                 <div className="absolute left-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-30 animate-fade-in">
                   <button
@@ -91,7 +90,7 @@ const Sidebar = () => {
                     <span className="font-medium">Logout</span>
                   </button>
                 </div>
-              )}
+              )} */}
             </div>
           )}
           <button
@@ -102,7 +101,7 @@ const Sidebar = () => {
           </button>
         </div>
       </div>
-      
+
       <nav className="flex-1 overflow-y-auto p-4">
         <ul className="space-y-2">
           {menuItems.map((item, index) => (
@@ -115,7 +114,7 @@ const Sidebar = () => {
                         ? 'bg-blue-600 text-white font-semibold shadow'
                         : 'hover:bg-blue-100 text-black'
                     }`}
-                    onClick={() => setUserMenuOpen((open) => !open)}
+                    onClick={() => setUserMenuOpen((open) => (open === index ? null : index))}
                   >
                     <item.icon size={20} />
                     {!isCollapsed && (
@@ -125,8 +124,8 @@ const Sidebar = () => {
                       </>
                     )}
                   </button>
-                  {userMenuOpen && !isCollapsed && (
-                    <ul className="absolute left-0 mt-1 w-full bg-white border rounded shadow z-20">
+                  {userMenuOpen === index && !isCollapsed && (
+                    <ul className="ml-8 mt-1 bg-white border rounded shadow z-20">
                       {item.options.map((opt, i) => (
                         <li key={i}>
                           <Link
