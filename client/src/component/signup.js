@@ -25,7 +25,7 @@ function Signup() {
     }
 
     try {
-      const url = `http://localhost:5000/academic/signup`;
+      const url = `https://academic-performance-grading-and-ev.vercel.app/signup`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
