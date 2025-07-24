@@ -1,35 +1,32 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import connectDB from './db/connection.js';
-import recordRoutes from './routes/record.js';
+// server.js
 
-dotenv.config();
-
+const express = require('express');
 const app = express();
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const AuthRouter = require('./routes/AuthRouter');
+const ProductRouter = require('./routes/ProductRouter');
+
+
+require('dotenv').config();
+require('./models/db');
+
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+// Middleware
 app.use(express.json());
+app.use(bodyParser.json());
+app.use(cors());
 
-const db = await connectDB(); // Top-level await is OK in ESM
-
-app.get('/', (req, res) => {
-  res.send('API is running...');
+// Route health check
+app.get('/ping', (req, res) => {
+    res.send('PONG');
 });
 
-// Example: Get all records from "students" collection
-app.get('/students', async (req, res) => {
-  try {
-    const students = await db.collection('students').find({}).toArray();
-    res.json(students);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch students' });
-  }
-});
-
-app.use('/records', recordRoutes(db));
-
+// Mount auth routes
+app.use('/academic', AuthRouter); // Routes like POST /academic/signup, /academic/login
+app.use('/products', ProductRouter);
+// Start server
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+    console.log(`✅ Server is running on port ${PORT}`);
 });

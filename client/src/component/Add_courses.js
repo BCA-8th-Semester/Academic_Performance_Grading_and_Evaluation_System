@@ -1,100 +1,175 @@
 import React, { useState } from "react";
-import { X } from "lucide-react";
+import { X, UploadCloud } from "lucide-react";
+import axios from "axios";
+import Spinner from "./ui/Spinner";
+import ErrorMessage from "./ui/ErrorMessage";
 
-const AddCourses = ({ onClose }) => {
-  const [courseName, setCourseName] = useState("");
-  const [instructorName, setInstructorName] = useState("");
-  const [board, setBoard] = useState("");
-  const [courseImage, setCourseImage] = useState(null);
+/**
+ * AddCourses component for adding a new course.
+ * @param {{
+ *   onClose: () => void,
+ *   onSuccess?: () => void
+ * }} props
+ */
+const AddCourses = ({ onClose, onSuccess }) => {
+  const [courseName, setCourseName] = useState('');
+  const [instructorName, setInstructorName] = useState('');
+  const [assignBoard, setAssignBoard] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleImageChange = (e) => {
-    setCourseImage(e.target.files[0]);
+  const resetForm = () => {
+    setCourseName('');
+    setInstructorName('');
+    setAssignBoard('');
+    setSelectedFile(null);
+    setPreviewUrl(null);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Here you can handle form submission, e.g., send data to backend
-    const formData = new FormData();
-    formData.append("courseName", courseName);
-    formData.append("instructorName", instructorName);
-    formData.append("board", board);
-    if (courseImage) {
-      formData.append("courseImage", courseImage);
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setSelectedFile(file);
+    if (file) {
+      setPreviewUrl(URL.createObjectURL(file));
+    } else {
+      setPreviewUrl(null);
     }
-    // Example: axios.post('/api/courses', formData)
-    alert("Course added successfully!");
-    setCourseName("");
-    setInstructorName("");
-    setBoard("");
-    setCourseImage(null);
-    if (onClose) onClose();
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append('title', courseName);
+    formData.append('instructor', instructorName);
+    formData.append('semester', assignBoard);
+    formData.append('image', selectedFile);
+
+    try {
+      await axios.post('http://localhost:5000/api/courses', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      resetForm();
+      if (onSuccess) onSuccess();
+      if (onClose) onClose();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="relative bg-white rounded-lg shadow-lg p-8 w-full max-w-md mx-auto">
-      {/* Cross (X) button at the top right */}
       <button
         type="button"
         className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 transition-colors"
         onClick={onClose}
         aria-label="Close"
+        tabIndex={0}
       >
         <X size={24} />
       </button>
-      <h2 className="text-xl font-semibold mb-6 text-center">Add Course</h2>
-      <form
-        onSubmit={handleSubmit}
-        encType="multipart/form-data"
-        className="space-y-4"
-      >
+      <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Add Course</h2>
+      {error && (
+        <div className="mb-4">
+          <ErrorMessage message={error} />
+        </div>
+      )}
+      <form onSubmit={handleSubmit} className="space-y-5" autoComplete="off">
         <div>
-          <label className="block text-sm font-medium mb-1">
-            Course Name:
+          <label htmlFor="courseName" className="block text-sm font-medium text-gray-700 mb-1">
+            Course Name
           </label>
           <input
+            id="courseName"
             type="text"
+            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Enter course name"
             value={courseName}
             onChange={(e) => setCourseName(e.target.value)}
             required
-            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            disabled={loading}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">
-            Instructor Name:
+          <label htmlFor="instructorName" className="block text-sm font-medium text-gray-700 mb-1">
+            Instructor Name
           </label>
           <input
+            id="instructorName"
             type="text"
+            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Enter instructor name"
             value={instructorName}
             onChange={(e) => setInstructorName(e.target.value)}
             required
-            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            disabled={loading}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Assign Board:</label>
+          <label htmlFor="assignBoard" className="block text-sm font-medium text-gray-700 mb-1">
+            Assign Board / Semester
+          </label>
           <input
+            id="assignBoard"
             type="text"
-            value={board}
-            onChange={(e) => setBoard(e.target.value)}
+            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Enter board or semester"
+            value={assignBoard}
+            onChange={(e) => setAssignBoard(e.target.value)}
             required
-            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            disabled={loading}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Course Image:</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="w-full"
-          />
+          <label htmlFor="courseImage" className="block text-sm font-medium text-gray-700 mb-1">
+            Course Image
+          </label>
+          <div className="flex items-center gap-3">
+            <label
+              htmlFor="courseImage"
+              className="flex items-center px-4 py-2 bg-blue-50 border border-blue-300 rounded-md cursor-pointer hover:bg-blue-100 transition-colors"
+            >
+              <UploadCloud className="mr-2 text-blue-500" size={20} />
+              <span className="text-blue-700 font-medium">
+                {selectedFile ? "Change Image" : "Upload Image"}
+              </span>
+              <input
+                id="courseImage"
+                type="file"
+                className="hidden"
+                onChange={handleFileChange}
+                accept="image/*"
+                required
+                disabled={loading}
+              />
+            </label>
+            {selectedFile && (
+              <span className="text-xs text-gray-600 truncate max-w-[120px]">{selectedFile.name}</span>
+            )}
+          </div>
+          {previewUrl && (
+            <div className="mt-2">
+              <img
+                src={previewUrl}
+                alt="Preview"
+                className="h-20 w-20 object-cover rounded border"
+              />
+            </div>
+          )}
         </div>
         <button
           type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors disabled:opacity-60"
+          disabled={loading}
         >
-          Add Course
+          {loading && <Spinner size={20} />}
+          {loading ? "Adding..." : "Add Course"}
         </button>
       </form>
     </div>

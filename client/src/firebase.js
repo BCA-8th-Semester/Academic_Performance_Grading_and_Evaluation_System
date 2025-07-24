@@ -1,13 +1,6 @@
 // File: firebase.js
 import { initializeApp } from 'firebase/app';
-import {  
-  getAuth,
-  signInWithEmailLink,
-  sendSignInLinkToEmail,
-  isSignInWithEmailLink,
-  signInWithPhoneNumber,
-  RecaptchaVerifier
-} from 'firebase/auth';
+import {  getAuth} from 'firebase/auth';
 
 
 const firebaseConfig = {
@@ -24,10 +17,3 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
 export default auth;
-export {   
-  signInWithEmailLink,
-  sendSignInLinkToEmail,
-  isSignInWithEmailLink,
-  signInWithPhoneNumber,
-  RecaptchaVerifier 
-};

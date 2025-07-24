@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Users, Presentation, Grid } from "lucide-react";
+import { Users, Presentation, Layers } from "lucide-react";
 import Sidebar from "./Sidebar";
 import DashboardHeader from "./DashboardHeader";
 import { auth } from "../firebase";
@@ -10,19 +10,19 @@ const adminTools = [
 		icon: <Users size={40} className="mx-auto mb-2" />,
 		title: "Manage User",
 		description: "Add, edit, or remove users.",
-		route: "/admin-tools/users",
+		route: "/user/manage", // <-- Updated route to match ManageUser route in App.js
 	},
 	{
 		icon: <Presentation size={40} className="mx-auto mb-2" />,
 		title: "Manage Board",
 		description: "Create and manage boards.",
-		route: "/admin-tools/boards",
+		route: "/admin/manage-board", // <-- Updated route to match ManageBoard route in App.js
 	},
 	{
-		icon: <Grid size={40} className="mx-auto mb-2" />,
-		title: "Evaluation Control",
-		description: "Control and configure evaluation settings.",
-		route: "/admin-tools/evaluation",
+		icon: <Layers size={40} className="mx-auto mb-2" />,
+		title: "Manage Framework",
+		description: "Control and configure frameworks.",
+		route: "/admin-tools/framework",
 	},
 ];
 
@@ -47,7 +47,6 @@ const AdminTools = () => {
 			<div className="flex-1 flex flex-col ml-64">
 				<DashboardHeader user={user} title="Admin Tools" />
 				<main className="flex-1 p-8">
-				
 					<div className="flex flex-wrap gap-8 justify-start">
 						{adminTools.map((tool, idx) => (
 							<div

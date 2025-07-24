@@ -21,7 +21,13 @@ const Dashboard = () => {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(currentUser => {
       if (!currentUser) {
-        navigate('/');
+        // Check if user has JWT token in localStorage
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/login'); // Redirect to login if no user and no token
+        }
+      } else if (currentUser.emailVerified === false) {
+        navigate('/login'); // Redirect to login if email is not verified
       } else {
         setUser(currentUser); // Update user state on profile/email change
       }
@@ -30,13 +36,25 @@ const Dashboard = () => {
   }, [navigate]);
 
   const handleLogout = async () => {
-    await auth.signOut();
-    navigate('/');
+    try {
+      // ✅ Clear localStorage (important)
+      localStorage.removeItem('token');
+      localStorage.removeItem('loggedInUser');
+
+      // ✅ Firebase Sign-out
+      await auth.signOut();
+
+      // ✅ Redirect to login
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
+
 
   return (
     <div style={{ display: 'flex' }} className="flex min-h-screen bg-gray-50">
-      <Sidebar user={user} />
+      <Sidebar user={user} onLogout={handleLogout} />
       <div className="flex-1 flex flex-col ml-64"> {/* or ml-16 if collapsed */}
         <DashboardHeader user={user} />
         <main className="flex-1 p-6 space-y-6">
@@ -47,12 +65,7 @@ const Dashboard = () => {
              <ChartsSection />
                 </div>
 
-           {/* <div className="grid grid-cols-12 gap-6">
-            <RecentCoursesCard />
-             <ChartsSection />
-            <RecentActivity /> 
-          </div> */}
-
+         
              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
   
               <StudentsTable />
