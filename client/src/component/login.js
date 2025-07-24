@@ -26,7 +26,7 @@ function LoginForm() {
     }
 
     try {
-      const url = `http://localhost:5000/academic/login`;
+      const url = `https://academic-performance-grading-and-ev.vercel.app/login`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
